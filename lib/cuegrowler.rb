@@ -2,6 +2,7 @@ require 'cuegrowler/version'
 require 'rubycue'
 require 'osaka'
 require 'growl'
+require 'open-uri'
 
 module Cuegrowler
 
@@ -50,7 +51,7 @@ module Cuegrowler
         @filename = filename
         @data = []
         
-        cuesheet = RubyCue::Cuesheet.new(File.read(filename))
+        cuesheet = RubyCue::Cuesheet.new(open(filename).read)
         cuesheet.parse!
 
         cuesheet.songs.each_with_index do |song, index|
@@ -120,10 +121,12 @@ module Cuegrowler
 
   class << self
 
-    def main
+    def start(filename=nil)
+
       player    = ITunes
-      tracklist = if ARGV[0]
-                    Tracklist::Cuesheet.new(ARGV[0])
+
+      tracklist = if filename
+                    Tracklist::Cuesheet.new(filename)
                   else
                     Tracklist::ITunes.new
                   end
@@ -132,6 +135,35 @@ module Cuegrowler
       puts "Player:    #{player}"
       puts "Tracklist: #{tracklist}"
       Growler.new(player, tracklist).loop_forever!
+
+    end
+
+    def main
+
+      require 'docopt'
+
+      doc = <<DOCOPT
+Displays Growl notifications from .cue files based on current time in iTunes.
+
+Usage:
+  cuegrowler [<filename>]
+  cuegrowler -h | --help
+
+Options:
+  -h, --help      Shows this screen.
+  <filename>      The .cue filename. If specified, cuegrowler will read the
+                  tracklist from this file. Otherwise, the tracklist is parsed
+                  from the current podcast episode's descriptions.
+DOCOPT
+
+      opts = Docopt::docopt(doc)
+
+      start opts["<filename>"]
+
+    rescue Docopt::Exit => e
+
+      puts e.message
+
     end
 
   end

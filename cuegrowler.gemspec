@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
   spec.add_runtime_dependency "rubycue"
+  spec.add_runtime_dependency "docopt"
   spec.add_runtime_dependency "osaka"
   spec.add_runtime_dependency "growl"
 end
